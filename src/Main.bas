@@ -17,7 +17,6 @@ Sub Main()
     Dim comp As Component2
     Dim docconf As String
     Dim doc As ModelDoc2
-    Dim docext As ModelDocExtension
     Dim property As String
     Dim regex As RegExp
     Dim keyComp As String
@@ -55,11 +54,10 @@ Sub Main()
         If Not uniqueComp.Exists(keyComp) Then
             Set doc = comp.GetModelDoc2
             If Not doc Is Nothing Then
-                Set docext = doc.Extension
                 docconf = comp.ReferencedConfiguration
-                property = GetProperty(KeyPrpBlank, docconf, docext)
+                property = GetProperty(KeyPrpBlank, docconf, doc.Extension)
                 If regex.Test(property) Then
-                    stepName = SaveToSTEP(docext, docconf)
+                    stepName = SaveToSTEP(doc, docconf)
                 Else
                     stepName = ""
                 End If
@@ -111,13 +109,24 @@ Function GetProperty(property As String, conf As String, docext As ModelDocExten
     GetProperty = value
 End Function
 
-Function SaveToSTEP(docext As ModelDocExtension, conf As String) As String
+Sub ActivatePartConfiguration(doc As ModelDoc2, conf As String)
+    Dim errors As swActivateDocError_e
+    
+    swApp.ActivateDoc3 doc.GetPathName, False, swDontRebuildActiveDoc, errors
+    doc.ShowConfiguration2 conf
+End Sub
+
+Function SaveToSTEP(doc As ModelDoc2, conf As String) As String
+    Dim docext As ModelDocExtension
     Dim newname As String
     Dim errors As swFileSaveError_e
     Dim warnings As swFileSaveWarning_e
     
+    Set docext = doc.Extension
     newname = GetNewName(docext, conf)
+    ActivatePartConfiguration doc, conf
     docext.SaveAs newname, swSaveAsCurrentVersion, swSaveAsOptions_Silent, Nothing, errors, warnings
+    swApp.QuitDoc doc.GetPathName
     SaveToSTEP = newname
 End Function
 
