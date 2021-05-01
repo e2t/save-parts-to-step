@@ -6,135 +6,146 @@ Const KeyPrpName As String = "Наименование"
 Const KeyPrpDesignation As String = "Обозначение"
 
 Dim swApp As Object
-Dim fso As FileSystemObject
-Dim currentFolder As String
+Dim gFSO As FileSystemObject
+Dim CurrentFolder As String
 
 Sub Main()
-    Dim currentDoc As ModelDoc2
-    Dim asm As AssemblyDoc
-    Dim compArray As Variant
-    Dim comp_ As Variant
-    Dim comp As Component2
-    Dim docconf As String
-    Dim doc As ModelDoc2
-    Dim property As String
-    Dim regex As RegExp
-    Dim keyComp As String
-    Dim key_ As Variant
-    Dim savedPartCount As Long
-    Dim highIndex As Long
-    Dim msg As String
-    Dim uniqueComp As Dictionary
-    Dim stepFiles() As String
-    Dim stepName As String
-    
-    Set swApp = Application.SldWorks
-    Set currentDoc = swApp.ActiveDoc
-    If currentDoc Is Nothing Then Exit Sub
-    If currentDoc.GetType <> swDocASSEMBLY Then
-        MsgBox "Только для сборок.", vbCritical
-        Exit Sub
+
+  Dim CurrentDoc As ModelDoc2
+  Dim Asm As AssemblyDoc
+  Dim CompArray As Variant
+  Dim Comp_ As Variant
+  Dim Comp As Component2
+  Dim DocConf As String
+  Dim Doc As ModelDoc2
+  Dim Property As String
+  Dim Regex As RegExp
+  Dim KeyComp As String
+  Dim Key_ As Variant
+  Dim SavedPartCount As Long
+  Dim HighIndex As Long
+  Dim Msg As String
+  Dim UniqueComp As Dictionary
+  Dim StepFiles() As String
+  Dim StepName As String
+  
+  Set swApp = Application.SldWorks
+  Set CurrentDoc = swApp.ActiveDoc
+  If CurrentDoc Is Nothing Then Exit Sub
+  If CurrentDoc.GetType <> swDocASSEMBLY Then
+    MsgBox "Только для сборок.", vbCritical
+    Exit Sub
+  End If
+  
+  Set gFSO = New FileSystemObject
+  Set UniqueComp = New Dictionary
+  
+  Set Regex = New RegExp
+  Regex.Pattern = ".*труба.*"
+  Regex.Global = True
+  Regex.IgnoreCase = True
+  
+  CurrentFolder = gFSO.GetParentFolderName(CurrentDoc.GetPathName)
+  Set Asm = CurrentDoc
+  CompArray = Asm.GetComponents(False)
+  For Each Comp_ In CompArray
+    Set Comp = Comp_
+    KeyComp = GetKeyComponent(Comp)
+    If Not UniqueComp.Exists(KeyComp) Then
+      Set Doc = Comp.GetModelDoc2
+      If Not Doc Is Nothing Then
+        DocConf = Comp.ReferencedConfiguration
+        Property = GetProperty(KeyPrpBlank, DocConf, Doc.Extension)
+        If Regex.Test(Property) Then
+          StepName = SaveToSTEP(Doc, DocConf)
+        Else
+          StepName = ""
+        End If
+        UniqueComp.Add KeyComp, StepName
+      End If
     End If
-    
-    Set fso = New FileSystemObject
-    Set uniqueComp = New Dictionary
-    
-    Set regex = New RegExp
-    regex.Pattern = ".*труба.*"
-    regex.Global = True
-    regex.IgnoreCase = True
-    
-    currentFolder = fso.GetParentFolderName(currentDoc.GetPathName)
-    Set asm = currentDoc
-    compArray = asm.GetComponents(False)
-    For Each comp_ In compArray
-        Set comp = comp_
-        keyComp = GetKeyComponent(comp)
-        
-        If Not uniqueComp.Exists(keyComp) Then
-            Set doc = comp.GetModelDoc2
-            If Not doc Is Nothing Then
-                docconf = comp.ReferencedConfiguration
-                property = GetProperty(KeyPrpBlank, docconf, doc.Extension)
-                If regex.Test(property) Then
-                    stepName = SaveToSTEP(doc, docconf)
-                Else
-                    stepName = ""
-                End If
-                uniqueComp.Add keyComp, stepName
-            End If
-        End If
-    Next
-    
-    ReDim stepFiles(uniqueComp.Count)
-    highIndex = -1
-    For Each key_ In uniqueComp.Items
-        If key_ <> "" Then
-            highIndex = highIndex + 1
-            stepFiles(highIndex) = key_
-        End If
-    Next
-    savedPartCount = highIndex + 1
-        
-    msg = "Сохранено компонентов:" + Str(savedPartCount) + "."
-    If savedPartCount > 0 Then
-        If MsgBox(msg + vbNewLine + "Показать?", vbYesNo) = vbYes Then
-            ReDim Preserve stepFiles(highIndex)
-            QuickSort stepFiles, 0, highIndex
-            Shell "explorer /select,""" & stepFiles(0) & """", vbNormalFocus
-        End If
-    Else
-        MsgBox msg
+  Next
+  
+  ReDim StepFiles(UniqueComp.Count)
+  HighIndex = -1
+  For Each Key_ In UniqueComp.Items
+    If Key_ <> "" Then
+      HighIndex = HighIndex + 1
+      StepFiles(HighIndex) = Key_
     End If
+  Next
+  SavedPartCount = HighIndex + 1
+      
+  Msg = "Сохранено компонентов:" + Str(SavedPartCount) + "."
+  If SavedPartCount > 0 Then
+    If MsgBox(Msg + vbNewLine + "Показать?", vbYesNo) = vbYes Then
+      ReDim Preserve StepFiles(HighIndex)
+      QuickSort StepFiles, 0, HighIndex
+      Shell "explorer /select,""" & StepFiles(0) & """", vbNormalFocus
+    End If
+  Else
+    MsgBox Msg
+  End If
+  
 End Sub
 
-Function GetKeyComponent(comp As Component2) As String
-    Dim basename As String
+Function GetKeyComponent(Comp As Component2) As String
+
+  Dim BaseName As String
+  
+  BaseName = gFSO.GetBaseName(Comp.GetPathName)
+  GetKeyComponent = BaseName + "@" + Comp.ReferencedConfiguration
     
-    basename = fso.GetBaseName(comp.GetPathName)
-    GetKeyComponent = basename + "@" + comp.ReferencedConfiguration
 End Function
 
-Function GetProperty(property As String, conf As String, docext As ModelDocExtension) As String
-    Dim value As String
-    Dim rawValue As String
-    Dim wasResolved As Boolean
-    Dim getPrpResult As swCustomInfoGetResult_e
+Function GetProperty(Property As String, Conf As String, DocExt As ModelDocExtension) As String
+
+  Dim Value As String
+  Dim RawValue As String
+  Dim WasResolved As Boolean
+  Dim GetPrpResult As swCustomInfoGetResult_e
+  
+  Value = ""
+  GetPrpResult = DocExt.CustomPropertyManager(Conf).Get5(Property, False, RawValue, Value, WasResolved)
+  If GetPrpResult = swCustomInfoGetResult_NotPresent Then
+    DocExt.CustomPropertyManager("").Get5 Property, False, RawValue, Value, WasResolved
+  End If
+  GetProperty = Trim(Value)
     
-    value = ""
-    getPrpResult = docext.CustomPropertyManager(conf).Get5(property, False, rawValue, value, wasResolved)
-    If getPrpResult = swCustomInfoGetResult_NotPresent Then
-        docext.CustomPropertyManager("").Get5 property, False, rawValue, value, wasResolved
-    End If
-    GetProperty = value
 End Function
 
-Sub ActivatePartConfiguration(doc As ModelDoc2, conf As String)
-    Dim errors As swActivateDocError_e
+Sub ActivatePartConfiguration(Doc As ModelDoc2, Conf As String)
+
+  Dim Errors As swActivateDocError_e
+  
+  swApp.ActivateDoc3 Doc.GetPathName, False, swDontRebuildActiveDoc, Errors
+  Doc.ShowConfiguration2 Conf
     
-    swApp.ActivateDoc3 doc.GetPathName, False, swDontRebuildActiveDoc, errors
-    doc.ShowConfiguration2 conf
 End Sub
 
-Function SaveToSTEP(doc As ModelDoc2, conf As String) As String
-    Dim docext As ModelDocExtension
-    Dim newname As String
-    Dim errors As swFileSaveError_e
-    Dim warnings As swFileSaveWarning_e
+Function SaveToSTEP(Doc As ModelDoc2, Conf As String) As String
+
+  Dim DocExt As ModelDocExtension
+  Dim NewName As String
+  Dim Errors As swFileSaveError_e
+  Dim Warnings As swFileSaveWarning_e
+  
+  Set DocExt = Doc.Extension
+  NewName = GetNewName(DocExt, Conf)
+  ActivatePartConfiguration Doc, Conf
+  DocExt.SaveAs NewName, swSaveAsCurrentVersion, swSaveAsOptions_Silent, Nothing, Errors, Warnings
+  swApp.QuitDoc Doc.GetPathName
+  SaveToSTEP = NewName
     
-    Set docext = doc.Extension
-    newname = GetNewName(docext, conf)
-    ActivatePartConfiguration doc, conf
-    docext.SaveAs newname, swSaveAsCurrentVersion, swSaveAsOptions_Silent, Nothing, errors, warnings
-    swApp.QuitDoc doc.GetPathName
-    SaveToSTEP = newname
 End Function
 
-Function GetNewName(docext As ModelDocExtension, conf As String) As String
-    Dim prpDesignation As String
-    Dim prpName As String
+Function GetNewName(DocExt As ModelDocExtension, Conf As String) As String
+
+  Dim PrpDesignation As String
+  Dim PrpName As String
+  
+  PrpDesignation = GetProperty(KeyPrpDesignation, Conf, DocExt)
+  PrpName = GetProperty(KeyPrpName, Conf, DocExt)
+  GetNewName = CurrentFolder + "\" + Trim(Translit(PrpDesignation) + " " + Translit(PrpName)) + ".STEP"
     
-    prpDesignation = GetProperty(KeyPrpDesignation, conf, docext)
-    prpName = GetProperty(KeyPrpName, conf, docext)
-    GetNewName = currentFolder + "\" + prpDesignation + " " + prpName + ".STEP"
 End Function
