@@ -13,6 +13,7 @@ Function Translit(Src As String) As String
   Dim PrevLetter As String
   Dim NextLetter As String
 
+  If Src = "" Then Exit Function
   LenSrc = Len(Src)
   ReDim Dst(LenSrc - 1)
   For I = 0 To LenSrc - 1
