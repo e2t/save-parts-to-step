@@ -1,12 +1,9 @@
 Attribute VB_Name = "Tools"
 Option Explicit
 
-Function GetKeyComponent(Comp As Component2) As String
+Function GetKeyComponent(DocPath As String, Conf As String) As String
 
-  Dim BaseName As String
-  
-  BaseName = gFSO.GetBaseName(Comp.GetPathName)
-  GetKeyComponent = BaseName + "@" + Comp.ReferencedConfiguration
+  GetKeyComponent = gFSO.GetBaseName(DocPath) + "@" + Conf
     
 End Function
 
@@ -99,7 +96,7 @@ Function GetNewName( _
   BaseName = Trim(BaseName)
   
   If ChangeNumber > 0 Then
-    BaseName = BaseName + " (изм." + Format(ChangeNumber, "00") + ")"
+    BaseName = BaseName + " (rev." + Format(ChangeNumber, "00") + ")"
   End If
   GetNewName = gFSO.BuildPath(CurrentFolder, BaseName + "." + Ext)
 
