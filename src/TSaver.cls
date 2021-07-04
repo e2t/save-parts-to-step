@@ -28,7 +28,8 @@ Public Sub Init(ACurrentFolder As String)
 
 End Sub
 
-Public Function TrySaveToSTEP(Doc As ModelDoc2, Conf As String) As String
+Public Function TrySaveToSTEP( _
+  Doc As ModelDoc2, Conf As String, NeedTranslit As Boolean) As String
 
   Dim Property As String
   Dim NewName As String
@@ -36,21 +37,22 @@ Public Function TrySaveToSTEP(Doc As ModelDoc2, Conf As String) As String
   TrySaveToSTEP = ""
   Property = GetProperty(KeyPrpBlank, Conf, Doc.Extension)
   If IsPipeRegex.Test(Property) Then
-    NewName = GetNewName(Doc, Conf, CurrentFolder, "STEP", True)
+    NewName = GetNewName(Doc, Conf, CurrentFolder, "STEP", NeedTranslit)
     SaveToSTEP Doc, Conf, NewName
     TrySaveToSTEP = NewName
   End If
 
 End Function
 
-Public Function TrySaveToDWG(Doc As ModelDoc2, Conf As String) As String
+Public Function TrySaveToDWG( _
+  Doc As ModelDoc2, Conf As String, NeedTranslit As Boolean) As String
   
   Dim NewName As String
 
   TrySaveToDWG = ""
   If LCase(Doc.GetPathName) Like FromCurrentFolderMask Then
     If IsSheetMetal(Doc) Then
-      NewName = GetNewName(Doc, Conf, CurrentFolder, "DWG", False)
+      NewName = GetNewName(Doc, Conf, CurrentFolder, "DWG", NeedTranslit)
       SaveToDWG Doc, Conf, NewName
       TrySaveToDWG = NewName
     End If

@@ -30,7 +30,7 @@ Sub Main()
   
 End Sub
 
-Sub Run(SaveAction As TSaveAction)
+Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean)
     
   Dim Asm As AssemblyDoc
   Dim Comp_ As Variant
@@ -59,9 +59,9 @@ Sub Run(SaveAction As TSaveAction)
     
     Select Case SaveAction
       Case SavePipeToSTEP
-        NewName = Saver.TrySaveToSTEP(Doc, Conf)
+        NewName = Saver.TrySaveToSTEP(Doc, Conf, NeedTranslit)
       Case SaveSheetToDWG
-        NewName = Saver.TrySaveToDWG(Doc, Conf)
+        NewName = Saver.TrySaveToDWG(Doc, Conf, NeedTranslit)
     End Select
     If NewName <> "" Then
       UniqueComp.Add KeyComp, NewName

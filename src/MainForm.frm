@@ -23,12 +23,18 @@ End Sub
 
 Private Sub CommandButtonRun_Click()
 
+  Dim Action As TSaveAction
+  Dim NeedTranslit As Boolean
+
   Me.Hide
   If Me.OptionButtonPipeToSTEP.Value Then
-    Run SavePipeToSTEP
+    Action = SavePipeToSTEP
+    NeedTranslit = Me.CheckBoxPipeToSTEPTranslit.Value
   Else
-    Run SaveSheetToDWG
+    Action = SaveSheetToDWG
+    NeedTranslit = False
   End If
+  Run Action, NeedTranslit
   ExitApp
 
 End Sub
