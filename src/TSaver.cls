@@ -10,6 +10,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Dim CurrentFolder As String
+Dim PipeFolder As String
 Dim FromCurrentFolderMask As String
 Dim IsPipeRegex As RegExp
 
@@ -25,36 +26,47 @@ Public Sub Init(ACurrentFolder As String)
 
   CurrentFolder = ACurrentFolder
   FromCurrentFolderMask = LCase(gFSO.BuildPath(ACurrentFolder, "*"))
+  PipeFolder = gFSO.BuildPath(CurrentFolder, "STEP ‰Îˇ ÚÛ·")
 
 End Sub
 
-Public Function TrySaveToSTEP( _
-  Doc As ModelDoc2, Conf As String, NeedTranslit As Boolean) As String
+Public Function IfPipeSaveToSTEP( _
+  Doc As ModelDoc2, Conf As String, NeedTranslit As Boolean, NeedCreateEmptyPDF As Boolean) As String
 
   Dim Property As String
   Dim NewName As String
-
-  TrySaveToSTEP = ""
+  Dim BaseName As String
+  Dim Suffix As String
+  
+  IfPipeSaveToSTEP = ""
   Property = GetProperty(KeyPrpBlank, Conf, Doc.Extension)
   If IsPipeRegex.Test(Property) Then
-    NewName = GetNewName(Doc, Conf, CurrentFolder, "STEP", NeedTranslit)
+    BaseName = GetNewBaseName(Doc, Conf, PipeFolder, NeedTranslit)
+    NewName = PrepareNewName(BaseName, PipeFolder, "STEP")
     SaveToSTEP Doc, Conf, NewName
-    TrySaveToSTEP = NewName
+    IfPipeSaveToSTEP = NewName
+    
+    If NeedCreateEmptyPDF Then
+      Suffix = IIf(NeedTranslit, "EMPTY", "œ”—“Œ…")
+      CreateEmptyPDF PrepareNewName(BaseName + " " + Suffix, PipeFolder, "PDF")
+    End If
   End If
 
 End Function
 
-Public Function TrySaveToDWG( _
+Public Function IfSheetSaveToDWG( _
   Doc As ModelDoc2, Conf As String, NeedTranslit As Boolean) As String
   
   Dim NewName As String
+  Dim BaseName As String
 
-  TrySaveToDWG = ""
+  IfSheetSaveToDWG = ""
   If LCase(Doc.GetPathName) Like FromCurrentFolderMask Then
     If IsSheetMetal(Doc) Then
-      NewName = GetNewName(Doc, Conf, CurrentFolder, "DWG", NeedTranslit)
+      BaseName = GetNewBaseName(Doc, Conf, CurrentFolder, NeedTranslit)
+      NewName = PrepareNewName(BaseName, CurrentFolder, "DWG")
       SaveToDWG Doc, Conf, NewName
-      TrySaveToDWG = NewName
+      IfSheetSaveToDWG = NewName
     End If
   End If
 

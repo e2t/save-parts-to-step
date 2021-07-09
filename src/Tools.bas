@@ -32,6 +32,27 @@ Sub ActivatePartConfiguration(Doc As ModelDoc2, Conf As String)
     
 End Sub
 
+Sub CreateEmptyPDF(NewName As String)
+
+  Const EmptyPDFBody = _
+    "%PDF-1.5" + vbNewLine + _
+    "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj" + vbNewLine + _
+    "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj" + vbNewLine + _
+    "3 0 obj<</Type/Page/MediaBox[0 0 595 842]/Parent 2 0 R/Resources<<>>>>endobj" + vbNewLine + _
+    "4 0 obj<</Type/XRef/Size 5/W[1 1 1]/Root 1 0 R/Length 15>>stream" + vbNewLine + _
+    "0   ff01090001340001650001b200endstream endobj" + vbNewLine + _
+    "startxref" + vbNewLine + _
+    "178" + vbNewLine + _
+    "%%EOF"
+    
+  Dim TextFile As TextStream
+  
+  Set TextFile = gFSO.CreateTextFile(NewName)
+  TextFile.Write EmptyPDFBody
+  TextFile.Close
+
+End Sub
+
 Sub SaveToDWG(Doc As ModelDoc2, Conf As String, NewName As String)
 
   Dim Part As PartDoc
@@ -71,14 +92,13 @@ Sub SaveToSTEP(Doc As ModelDoc2, Conf As String, NewName As String)
 
 End Sub
 
-Function GetNewName( _
-  Doc As ModelDoc2, Conf As String, CurrentFolder As String, _
-  Ext As String, NeedTranslit As Boolean) As String
+Function GetNewBaseName( _
+  Doc As ModelDoc2, Conf As String, FolderName As String, _
+  NeedTranslit As Boolean) As String
 
   Dim PrpDesignation As String
   Dim PrpName As String
   Dim ChangeNumber As Integer
-  Dim BaseName As String
 
   PrpDesignation = GetProperty(KeyPrpDesignation, Conf, Doc.Extension)
   PrpName = GetProperty(KeyPrpName, Conf, Doc.Extension)
@@ -89,17 +109,26 @@ Function GetNewName( _
   End If
   
   If NeedTranslit Then
-    BaseName = Translit(PrpDesignation) + " " + Translit(PrpName)
+    GetNewBaseName = Translit(PrpDesignation) + " " + Translit(PrpName)
   Else
-    BaseName = PrpDesignation + " " + PrpName
+    GetNewBaseName = PrpDesignation + " " + PrpName
   End If
-  BaseName = Trim(BaseName)
+  GetNewBaseName = Trim(GetNewBaseName)
   
   If ChangeNumber > 0 Then
-    BaseName = BaseName + " (rev." + Format(ChangeNumber, "00") + ")"
+    GetNewBaseName = GetNewBaseName + " (rev." + Format(ChangeNumber, "00") + ")"
   End If
-  GetNewName = gFSO.BuildPath(CurrentFolder, BaseName + "." + Ext)
 
+End Function
+
+Function PrepareNewName( _
+  BaseName As String, FolderName As String, Ext As String) As String
+  
+  PrepareNewName = gFSO.BuildPath(FolderName, BaseName + "." + Ext)
+  If Not gFSO.FolderExists(FolderName) Then
+    gFSO.CreateFolder FolderName
+  End If
+  
 End Function
 
 Function FindFeatureThisType(TypeName As String, Model As ModelDoc2) As Feature

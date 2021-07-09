@@ -59,9 +59,9 @@ Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean)
     
     Select Case SaveAction
       Case SavePipeToSTEP
-        NewName = Saver.TrySaveToSTEP(Doc, Conf, NeedTranslit)
+        NewName = Saver.IfPipeSaveToSTEP(Doc, Conf, NeedTranslit, True)
       Case SaveSheetToDWG
-        NewName = Saver.TrySaveToDWG(Doc, Conf, NeedTranslit)
+        NewName = Saver.IfSheetSaveToDWG(Doc, Conf, NeedTranslit)
     End Select
     If NewName <> "" Then
       UniqueComp.Add KeyComp, NewName
