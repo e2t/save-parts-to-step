@@ -35,12 +35,17 @@ End Sub
 Sub CreateEmptyPDF(NewName As String)
 
   Const EmptyPDFBody = _
-    "%PDF-1.5" + vbNewLine + _
+    "%PDF-1.4" + vbNewLine + _
     "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj" + vbNewLine + _
     "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj" + vbNewLine + _
     "3 0 obj<</Type/Page/MediaBox[0 0 595 842]/Parent 2 0 R/Resources<<>>>>endobj" + vbNewLine + _
-    "4 0 obj<</Type/XRef/Size 5/W[1 1 1]/Root 1 0 R/Length 15>>stream" + vbNewLine + _
-    "0   ff01090001340001650001b200endstream endobj" + vbNewLine + _
+    "xref" + vbNewLine + _
+    "0 4" + vbNewLine + _
+    "0000000000 65535 f" + vbNewLine + _
+    "0000000009 00000 n" + vbNewLine + _
+    "0000000052 00000 n" + vbNewLine + _
+    "0000000101 00000 n" + vbNewLine + _
+    "trailer<</Size 4/Root 1 0 R>>" + vbNewLine + _
     "startxref" + vbNewLine + _
     "178" + vbNewLine + _
     "%%EOF"
