@@ -6,7 +6,8 @@ Enum TSaveAction
   SaveSheetToDWG
 End Enum
 
-Public Const KeyPrpName = "Наименование"
+Public Const KeyPrpNameRU = "Наименование"
+Public Const KeyPrpNameEN = "Наименование EN"
 Public Const KeyPrpDesignation = "Обозначение"
 Public Const KeyPrpBlank = "Заготовка"
 
@@ -15,12 +16,12 @@ Public swApp As Object
 Dim CurrentDoc As ModelDoc2
 
 Sub Main()
-  
+
   Set swApp = Application.SldWorks
   Set CurrentDoc = swApp.ActiveDoc
   If CurrentDoc Is Nothing Then Exit Sub
   If CurrentDoc.GetType <> swDocASSEMBLY Then
-    MsgBox "Только для сборок.", vbCritical
+    MsgBox "For assemblies only.", vbCritical
     Exit Sub
   End If
   
@@ -30,7 +31,7 @@ Sub Main()
   
 End Sub
 
-Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean)
+Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean, IsNameEn As Boolean)
     
   Dim Asm As AssemblyDoc
   Dim Comp_ As Variant
@@ -43,7 +44,7 @@ Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean)
   Dim Saver As TSaver
   
   Set Saver = New TSaver
-  Saver.Init gFSO.GetParentFolderName(CurrentDoc.GetPathName)
+  Saver.Init gFSO.GetParentFolderName(CurrentDoc.GetPathName), NeedTranslit, IsNameEn
   
   Set UniqueComp = New Dictionary
   Set Asm = CurrentDoc
@@ -59,9 +60,9 @@ Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean)
     
     Select Case SaveAction
       Case SavePipeToSTEP
-        NewName = Saver.IfPipeSaveToSTEP(Doc, Conf, NeedTranslit, True)
+        NewName = Saver.IfPipeSaveToSTEP(Doc, Conf, True)
       Case SaveSheetToDWG
-        NewName = Saver.IfSheetSaveToDWG(Doc, Conf, NeedTranslit)
+        NewName = Saver.IfSheetSaveToDWG(Doc, Conf)
     End Select
     If NewName <> "" Then
       UniqueComp.Add KeyComp, NewName
@@ -80,9 +81,9 @@ Sub ShowResults(UniqueComp As Dictionary)
   Dim Msg As String
   Dim LowerFileName As String
 
-  Msg = "Сохранено компонентов:" + Str(UniqueComp.Count) + "."
+  Msg = "Saved:" + Str(UniqueComp.Count) + "."
   If UniqueComp.Count > 0 Then
-    If MsgBox(Msg + vbNewLine + "Показать?", vbYesNo) = vbYes Then
+    If MsgBox(Msg + vbNewLine + "Show?", vbYesNo) = vbYes Then
       
       LowerFileName = UniqueComp.Items(0)
       For I = 1 To UniqueComp.Count - 1

@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} MainForm 
-   Caption         =   "Сохранение компонентов сборки"
+   Caption         =   "Export parts to other formats"
    ClientHeight    =   2760
    ClientLeft      =   45
    ClientTop       =   390
@@ -25,6 +25,7 @@ Private Sub CommandButtonRun_Click()
 
   Dim Action As TSaveAction
   Dim NeedTranslit As Boolean
+  Dim IsNameEn As Boolean
 
   Me.Hide
   If Me.OptionButtonPipeToSTEP.Value Then
@@ -34,7 +35,9 @@ Private Sub CommandButtonRun_Click()
     Action = SaveSheetToDWG
     NeedTranslit = False
   End If
-  Run Action, NeedTranslit
+  IsNameEn = Me.ChkNameEn.Value
+  
+  Run Action, NeedTranslit, IsNameEn
   ExitApp
 
 End Sub

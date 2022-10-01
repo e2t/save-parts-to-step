@@ -9,15 +9,16 @@ End Function
 
 Function GetProperty(Property As String, Conf As String, DocExt As ModelDocExtension) As String
 
+  Const UseCached = False
   Dim Value As String
   Dim RawValue As String
   Dim WasResolved As Boolean
   Dim GetPrpResult As swCustomInfoGetResult_e
   
   Value = ""
-  GetPrpResult = DocExt.CustomPropertyManager(Conf).Get5(Property, False, RawValue, Value, WasResolved)
+  GetPrpResult = DocExt.CustomPropertyManager(Conf).Get5(Property, UseCached, RawValue, Value, WasResolved)
   If GetPrpResult = swCustomInfoGetResult_NotPresent Then
-    DocExt.CustomPropertyManager("").Get5 Property, False, RawValue, Value, WasResolved
+    DocExt.CustomPropertyManager("").Get5 Property, UseCached, RawValue, Value, WasResolved
   End If
   GetProperty = Trim(Value)
     
@@ -97,35 +98,6 @@ Sub SaveToSTEP(Doc As ModelDoc2, Conf As String, NewName As String)
 
 End Sub
 
-Function GetNewBaseName( _
-  Doc As ModelDoc2, Conf As String, FolderName As String, _
-  NeedTranslit As Boolean) As String
-
-  Dim PrpDesignation As String
-  Dim PrpName As String
-  Dim ChangeNumber As Integer
-
-  PrpDesignation = GetProperty(KeyPrpDesignation, Conf, Doc.Extension)
-  PrpName = GetProperty(KeyPrpName, Conf, Doc.Extension)
-  
-  ChangeNumber = 0
-  If Not GetChangeNumber(Doc, PrpDesignation, PrpName, ChangeNumber) Then
-    GetChangeNumber Doc, GetBaseDesignation(PrpDesignation), PrpName, ChangeNumber
-  End If
-  
-  If NeedTranslit Then
-    GetNewBaseName = Translit(PrpDesignation) + " " + Translit(PrpName)
-  Else
-    GetNewBaseName = PrpDesignation + " " + PrpName
-  End If
-  GetNewBaseName = Trim(GetNewBaseName)
-  
-  If ChangeNumber > 0 Then
-    GetNewBaseName = GetNewBaseName + " (rev." + Format(ChangeNumber, "00") + ")"
-  End If
-
-End Function
-
 Function PrepareNewName( _
   BaseName As String, FolderName As String, Ext As String) As String
   
@@ -200,15 +172,15 @@ End Function
 
 Function GetBaseDesignation(Designation As String) As String
 
-  Dim lastFullstopPosition As Integer
-  Dim firstHyphenPosition As Integer
+  Dim LastFullstopPosition As Integer
+  Dim FirstHyphenPosition As Integer
   
   GetBaseDesignation = Designation
-  lastFullstopPosition = InStrRev(Designation, ".")
-  If lastFullstopPosition > 0 Then
-    firstHyphenPosition = InStr(lastFullstopPosition, Designation, "-")
-    If firstHyphenPosition > 0 Then
-      GetBaseDesignation = Left(Designation, firstHyphenPosition - 1)
+  LastFullstopPosition = InStrRev(Designation, ".")
+  If LastFullstopPosition > 0 Then
+    FirstHyphenPosition = InStr(LastFullstopPosition, Designation, "-")
+    If FirstHyphenPosition > 0 Then
+      GetBaseDesignation = Left(Designation, FirstHyphenPosition - 1)
     End If
   End If
     
