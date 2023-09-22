@@ -16,28 +16,27 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Sub CommandButtonClose_Click()
-
-  ExitApp
-
+    ExitApp
 End Sub
 
 Private Sub CommandButtonRun_Click()
-
-  Dim Action As TSaveAction
-  Dim NeedTranslit As Boolean
-  Dim IsNameEn As Boolean
-
-  Me.Hide
-  If Me.OptionButtonPipeToSTEP.Value Then
-    Action = SavePipeToSTEP
-    NeedTranslit = Me.CheckBoxPipeToSTEPTranslit.Value
-  Else
-    Action = SaveSheetToDWG
-    NeedTranslit = False
-  End If
-  IsNameEn = Me.ChkNameEn.Value
-  
-  Run Action, NeedTranslit, IsNameEn
-  ExitApp
-
+    Dim Action As TSaveAction
+    Dim NeedTranslit As Boolean
+    Dim IsNameEn As Boolean
+    
+    Me.Hide
+    If Me.OptionButtonPipeToSTEP.Value Then
+        Action = SavePipeToSTEP
+        NeedTranslit = Me.CheckBoxPipeToSTEPTranslit.Value
+    ElseIf Me.OptionButtonSheetToDWG.Value Then
+        Action = SaveSheetToDWG
+        NeedTranslit = False
+    Else
+        Action = SaveSheetToDXF
+        NeedTranslit = False
+    End If
+    IsNameEn = Me.ChkNameEn.Value
+    
+    Run Action, NeedTranslit, IsNameEn
+    ExitApp
 End Sub
