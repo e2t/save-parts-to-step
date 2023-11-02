@@ -7,17 +7,17 @@ End Function
 
 Function GetProperty(Property As String, Conf As String, DocExt As ModelDocExtension) As String
     Const UseCached = False
-    Dim Value As String
+    Dim value As String
     Dim RawValue As String
     Dim WasResolved As Boolean
     Dim GetPrpResult As swCustomInfoGetResult_e
     
-    Value = ""
-    GetPrpResult = DocExt.CustomPropertyManager(Conf).Get5(Property, UseCached, RawValue, Value, WasResolved)
+    value = ""
+    GetPrpResult = DocExt.CustomPropertyManager(Conf).Get5(Property, UseCached, RawValue, value, WasResolved)
     If GetPrpResult = swCustomInfoGetResult_NotPresent Then
-        DocExt.CustomPropertyManager("").Get5 Property, UseCached, RawValue, Value, WasResolved
+        DocExt.CustomPropertyManager("").Get5 Property, UseCached, RawValue, value, WasResolved
     End If
-    GetProperty = Trim(Value)
+    GetProperty = Trim(value)
 End Function
 
 Sub ActivatePartConfiguration(Doc As ModelDoc2, Conf As String)

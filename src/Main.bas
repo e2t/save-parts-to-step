@@ -7,6 +7,9 @@ Enum TSaveAction
     SaveSheetToDXF
 End Enum
 
+Public Const MacroName = "SavePartsToSTEP"
+Public Const MacroSection = "Main"
+
 Public Const KeyPrpNameRU = "Наименование"
 Public Const KeyPrpNameEN = "Наименование EN"
 Public Const KeyPrpDesignation = "Обозначение"
@@ -29,7 +32,7 @@ Sub Main()
     MainForm.Show
 End Sub
 
-Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean, IsNameEn As Boolean)
+Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean, IsNameEn As Boolean, NeedCreateEmptyPDF As Boolean)
     Dim Asm As AssemblyDoc
     Dim Comp_ As Variant
     Dim Comp As Component2
@@ -57,7 +60,7 @@ Sub Run(SaveAction As TSaveAction, NeedTranslit As Boolean, IsNameEn As Boolean)
         
         Select Case SaveAction
             Case SavePipeToSTEP
-                NewName = Saver.IfPipeSaveToSTEP(Doc, Conf, True)
+                NewName = Saver.IfPipeSaveToSTEP(Doc, Conf, NeedCreateEmptyPDF)
             Case SaveSheetToDWG
                 NewName = Saver.IfSheetSaveTo(Doc, Conf, "DWG")
             Case SaveSheetToDXF

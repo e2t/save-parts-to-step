@@ -34,17 +34,19 @@ Public Function IfPipeSaveToSTEP( _
     Doc As ModelDoc2, Conf As String, NeedCreateEmptyPDF As Boolean) As String
     
     Const Suffix = "EMPTY"
-    
-    Dim SpecName As String
+    Dim PrpDesignation As String
+    Dim PrpName As String
     Dim Blank As String
+    Dim Dsg As String
     Dim NewName As String
     Dim BaseName As String
     
     IfPipeSaveToSTEP = ""
-    SpecName = GetProperty(KeyPrpName, Conf, Doc.Extension)
+    PrpDesignation = GetProperty(KeyPrpDesignation, Conf, Doc.Extension)
+    PrpName = GetProperty(KeyPrpName, Conf, Doc.Extension)
     Blank = GetProperty(KeyPrpBlank, Conf, Doc.Extension)
-    If IsPipeRegex.Test(SpecName) Or IsPipeRegex.Test(Blank) Then
-        BaseName = GetNewBaseName(Doc, Conf, PipeFolder)
+    If (IsPipeRegex.Test(PrpName) Or IsPipeRegex.Test(Blank)) And PrpDesignation <> "" Then
+        BaseName = GetNewBaseName2(Doc, Conf, PrpDesignation, PrpName)
         NewName = PrepareNewName(BaseName, PipeFolder, "STEP")
         SaveToSTEP Doc, Conf, NewName
         IfPipeSaveToSTEP = NewName
@@ -62,7 +64,7 @@ Public Function IfSheetSaveTo(Doc As ModelDoc2, Conf As String, ext As String) A
     IfSheetSaveTo = ""
     If LCase(Doc.GetPathName) Like FromCurrentFolderMask Then
         If IsSheetMetal(Doc) Then
-            BaseName = GetNewBaseName(Doc, Conf, CurrentFolder)
+            BaseName = GetNewBaseName(Doc, Conf)
             NewName = PrepareNewName(BaseName, CurrentFolder, ext)
             SaveToDWG Doc, Conf, NewName
             IfSheetSaveTo = NewName
@@ -70,13 +72,19 @@ Public Function IfSheetSaveTo(Doc As ModelDoc2, Conf As String, ext As String) A
     End If
 End Function
 
-Private Function GetNewBaseName(Doc As ModelDoc2, Conf As String, FolderName As String) As String
+Private Function GetNewBaseName(Doc As ModelDoc2, Conf As String) As String
     Dim PrpDesignation As String
     Dim PrpName As String
-    Dim ChangeNumber As Integer
     
     PrpDesignation = GetProperty(KeyPrpDesignation, Conf, Doc.Extension)
     PrpName = GetProperty(KeyPrpName, Conf, Doc.Extension)
+    
+    GetNewBaseName = GetNewBaseName2(Doc, Conf, PrpDesignation, PrpName)
+End Function
+
+Private Function GetNewBaseName2(Doc As ModelDoc2, Conf As String, _
+                                 PrpDesignation As String, PrpName As String) As String
+    Dim ChangeNumber As Integer
     
     ChangeNumber = 0
     If Not GetChangeNumber(Doc, PrpDesignation, PrpName, ChangeNumber) Then
@@ -84,14 +92,13 @@ Private Function GetNewBaseName(Doc As ModelDoc2, Conf As String, FolderName As 
     End If
     
     If NeedTranslit Then
-        GetNewBaseName = Translit(PrpDesignation) + " " + Translit(PrpName)
+        GetNewBaseName2 = Translit(PrpDesignation) + " " + Translit(PrpName)
     Else
-        GetNewBaseName = PrpDesignation + " " + PrpName
+        GetNewBaseName2 = PrpDesignation + " " + PrpName
     End If
-    GetNewBaseName = Trim(GetNewBaseName)
+    GetNewBaseName2 = Trim(GetNewBaseName2)
     
     If ChangeNumber > 0 Then
-        GetNewBaseName = GetNewBaseName + " (rev." + Format(ChangeNumber, "00") + ")"
+        GetNewBaseName2 = GetNewBaseName2 + " (rev." + Format(ChangeNumber, "00") + ")"
     End If
 End Function
-
