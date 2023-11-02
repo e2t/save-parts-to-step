@@ -1,11 +1,9 @@
 ﻿# SavePartsToSTEP
-Макрос для сохранения всех деталей активной сборки, которые изготавливаются из труб, в формате STEP.
+Макрос для збереження деталей активної складальної одиниці у різних форматах.
 
-### Зависимости
+### Залежності
 - SolidWorks 2014+
-- Microsoft Scripting Runtime
-- Microsoft VBScript Regular Expressions 5.5
 
-### Авторские права
+### Copyright
 
 [Zero-Clause BSD (0BSD)](https://opensource.org/licenses/0BSD)
